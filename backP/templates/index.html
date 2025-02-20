@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Messenger</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: orange;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Список пользователей */
+        #userList {
+            width: 20%;
+            background-color: #222;
+            padding: 10px;
+            border-right: 1px solid orange;
+            height: 100vh;
+        }
+
+        #userList h3 {
+            text-align: center;
+        }
+
+        #userList ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #userList li {
+            margin: 10px 0;
+        }
+
+        #userList a {
+            color: orange;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #userList a:hover {
+            text-decoration: underline;
+        }
+
+        /* Чат */
+        #chatContainer {
+            width: 80%;
+            padding: 20px;
+        }
+
+        #messages {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid orange;
+            padding: 10px;
+            background-color: #111;
+            color: orange;
+            margin-bottom: 10px;
+        }
+
+        #myMessage {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid orange;
+            border-radius: 5px;
+            background-color: #111;
+            color: orange;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: orange;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background-color: #ff8c00;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Список пользователей -->
+    <div id="userList">
+        <h3>Users</h3>
+        <ul>
+            <!-- if users -->
+            {% for user in users %}
+                <li><a href="{{ url_for('private_chat', username=user) }}">{{ user[1] }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Чат -->
+    <div id="chatContainer">
+        <h1>Simple Messenger</h1>
+        <div id="messages"></div>
+        <input type="text" id="myMessage" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script type="text/javascript">
+        var socket = io();
+
+        socket.on('message', function(msg) {
+            $('#messages').append($('<p>').text(msg));
+        });
+
+        function sendMessage() {
+            var msg = $('#myMessage').val();
+            socket.send(msg);
+            $('#myMessage').val('');
+        }
+    </script>
+
+</body>
+</html>
