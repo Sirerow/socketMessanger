@@ -70,7 +70,7 @@
         var chatPartner = "{{ username }}";
 
         // Присоединение к комнате чата
-        socket.emit('join_private', { from: currentUser, to: chatPartner });
+        socket.emit('join_private', { from: currentUser, to: chatPartner});
 
         socket.on('private_message', function(msg) {
             $('#messages').append($('<p>').text(msg));

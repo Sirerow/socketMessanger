@@ -1,8 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 from flask_socketio import SocketIO, join_room
-from flask_login import login_required, LoginManager, current_user
+from flask_login import login_required, LoginManager, current_user, logout_user
 from DBase import DB
-from backP.UserLogin import  UserLogin
+from backP.UserLogin import UserLogin
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'QkrejD'
@@ -34,17 +34,29 @@ def handle_join_private(data):
     join_room(room)
     print(f"User {current_user.get_user()[1]} joined room {room}")
 
-@socketio.on('private_message')
-def handle_private_message(data):
-    sender = current_user.get_user()[1]
-    receiver = data['to']
-    room = f"private_{min(receiver, sender)}_{max(receiver, sender)}"
-    socketio.emit('private_message', f"{sender}: {data['message']}", room=room)
 
 @socketio.on('message')
 def handle_message(msg):
     msg=f"{current_user.get_user()[1]}:"+msg
     socketio.send(msg)
+
+
+@socketio.on('private_message')
+def handle_private_message(data):
+    sender = current_user.get_user()[1]
+    receiver = data['to']
+
+    db = DB()
+    sender_id = db.getUserOnLogin(sender)[0]
+    receiver_id = db.getUserOnLogin(receiver)[0]
+
+    # Сначала записываем в базу
+    db.addMessage(sender_id, receiver_id, data["message"])
+
+    # Теперь отправляем в сокет
+    room = f"private_{min(receiver, sender)}_{max(receiver, sender)}"
+    socketio.emit('private_message', f"{sender}: {data['message']}", room=room)
+
 
 @app.route('/chat')
 @login_required
@@ -57,4 +69,4 @@ app.register_blueprint(auth_bp)
 
 
 if __name__ == '__main__':
-    socketio.run(app, allow_unsafe_werkzeug=True, debug=True, port=5000)
+    socketio.run(app, allow_unsafe_werkzeug=True, debug=True, port=5000, use_reloader=False)

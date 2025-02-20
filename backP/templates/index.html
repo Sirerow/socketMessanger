@@ -14,6 +14,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            height: 100vh;
         }
 
         /* Список пользователей */
@@ -22,6 +23,9 @@
             background-color: #222;
             padding: 10px;
             border-right: 1px solid orange;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Кнопка всегда внизу */
             height: 100vh;
         }
 
@@ -32,6 +36,10 @@
         #userList ul {
             list-style: none;
             padding: 0;
+            width: 100%;
+            text-align: center;
+            flex-grow: 1; /* Растягиваем список пользователей */
+            overflow-y: auto; /* Добавляем прокрутку, если пользователей много */
         }
 
         #userList li {
@@ -87,20 +95,45 @@
         button:hover {
             background-color: #ff8c00;
         }
+
+        /* Кнопка выхода */
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .logout-btn:hover {
+            background-color: darkred;
+        }
     </style>
 </head>
 <body>
 
     <!-- Список пользователей -->
     <div id="userList">
-        <h3>Users</h3>
-        <ul>
-            <!-- if users -->
-            {% for user in users %}
-                <li><a href="{{ url_for('private_chat', username=user) }}">{{ user[1] }}</a></li>
-            {% endfor %}
-        </ul>
+        <div>
+            <h3>Users</h3>
+            <ul>
+                {% for user in users %}
+                    <li><a href="{{ url_for('private_chat', username=user[1]) }}">{{ user[1] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="logout-container">
+        <form action="/deauthorize" method="POST">
+            <button type="submit" class="logout-btn">SocketHUB out</button>
+        </form>
     </div>
+</div>
 
     <!-- Чат -->
     <div id="chatContainer">
@@ -110,19 +143,6 @@
         <button onclick="sendMessage()">Send</button>
     </div>
 
-    <script type="text/javascript">
-        var socket = io();
-
-        socket.on('message', function(msg) {
-            $('#messages').append($('<p>').text(msg));
-        });
-
-        function sendMessage() {
-            var msg = $('#myMessage').val();
-            socket.send(msg);
-            $('#myMessage').val('');
-        }
-    </script>
 
 </body>
 </html>
